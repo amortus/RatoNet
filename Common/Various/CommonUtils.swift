@@ -18,8 +18,6 @@ let backgroundColor = Color(white: 0, opacity: 0.4)
 let scoreboardBlueColor = RgbColor(red: 0x0B, green: 0x10, blue: 0xAC).color()
 let scoreboardDarkBlueColor = RgbColor(red: 0, green: 3, blue: 0x5B).color()
 
-extension String: @retroactive Error {}
-
 // Do we have a race condition? How to fix?
 extension CMSampleBuffer: @unchecked @retroactive Sendable {}
 extension CVBuffer: @unchecked @retroactive Sendable {}
@@ -347,12 +345,6 @@ extension Data {
         return Int64(UInt64(getFourBytesBe(offset: offset)) << 32 | UInt64(getFourBytesBe(offset: offset + 4)))
     }
 
-    func getUInt32Be(offset: Int = 0) -> UInt32 {
-        return withUnsafeBytes { data in
-            data.load(fromByteOffset: offset, as: UInt32.self)
-        }.bigEndian
-    }
-
     func getUInt16Be(offset: Int = 0) -> UInt16 {
         return withUnsafeBytes { data in
             data.load(fromByteOffset: offset, as: UInt16.self)
@@ -381,14 +373,6 @@ extension Data {
             of: value.bigEndian,
             toByteOffset: offset,
             as: UInt16.self
-        ) }
-    }
-
-    mutating func setUInt32Be(value: UInt32, offset: Int = 0) {
-        withUnsafeMutableBytes { data in data.storeBytes(
-            of: value.bigEndian,
-            toByteOffset: offset,
-            as: UInt32.self
         ) }
     }
 
@@ -530,8 +514,6 @@ func sleep(seconds: Int) async throws {
 func sleep(milliSeconds: Int) async throws {
     try await Task.sleep(nanoseconds: UInt64(milliSeconds) * 1_000_000)
 }
-
-let ratonetAppGroup = "group.com.eerimoq.RatoNet"
 
 extension Duration {
     var microseconds: Int64 {
