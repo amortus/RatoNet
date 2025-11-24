@@ -86,6 +86,36 @@ workflows:
           # Desabilitar plugins de pacotes para evitar erro de validação do PrepareLicenseList
           export SWIFT_PACKAGE_PLUGIN_DISABLE=1
           
+          # Remover temporariamente a dependência do Watch app antes do archive
+          # O Watch app é watchOS e não pode ser arquivado junto com iOS
+          python3 << 'EOF'
+          import re
+          
+          project_file = "RatoNet.xcodeproj/project.pbxproj"
+          
+          with open(project_file, 'r', encoding='utf-8') as f:
+              content = f.read()
+          
+          # Fazer backup
+          with open(project_file + '.backup', 'w', encoding='utf-8') as f:
+              f.write(content)
+          
+          # Remover "Embed Watch Content" do buildPhases do target RatoNet
+          # Procurar por: 03ECDF572B8E4E6000BD920E /* Embed Watch Content */,
+          pattern1 = r'\t\t\t\t03ECDF572B8E4E6000BD920E /\* Embed Watch Content \*/,\n'
+          content = re.sub(pattern1, '', content)
+          
+          # Remover a dependência do Watch app (PBXTargetDependency)
+          # Procurar por: 03ECDF522B8E4E6000BD920E /* PBXTargetDependency */,
+          pattern2 = r'\t\t\t\t03ECDF522B8E4E6000BD920E /\* PBXTargetDependency \*/,\n'
+          content = re.sub(pattern2, '', content)
+          
+          with open(project_file, 'w', encoding='utf-8') as f:
+              f.write(content)
+          
+          print("✅ Dependência do Watch app removida temporariamente para o archive")
+          EOF
+          
           # Primeiro, fazer build completo do scheme para garantir que todas as dependências
           # sejam construídas na ordem correta (SDWebImage antes de SDWebImageWebPCoder)
           xcodebuild \
@@ -103,7 +133,6 @@ workflows:
             build || true
           
           # Agora fazer o archive usando -scheme (obrigatório quando usa -archivePath)
-          # O Watch app será ignorado automaticamente porque é watchOS
           xcodebuild \
             -project "$XCODE_WORKSPACE" \
             -scheme "$XCODE_SCHEME" \
@@ -119,6 +148,12 @@ workflows:
             ONLY_ACTIVE_ARCH=NO \
             SKIP_INSTALL=YES \
             archive
+          
+          # Restaurar o backup do project.pbxproj
+          if [ -f "RatoNet.xcodeproj/project.pbxproj.backup" ]; then
+              mv "RatoNet.xcodeproj/project.pbxproj.backup" "RatoNet.xcodeproj/project.pbxproj"
+              echo "✅ Dependência do Watch app restaurada"
+          fi
       - name: Export IPA
         script: |
           xcodebuild \
