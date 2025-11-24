@@ -194,20 +194,39 @@ workflows:
               exit 1
           fi
           
-          echo "📦 Exportando IPA do archive..."
-          xcodebuild \
-            -exportArchive \
-            -archivePath build/RatoNet.xcarchive \
-            -exportOptionsPlist exportOptions.plist \
-            -exportPath build/ipa
+          echo "📦 Extraindo IPA do archive..."
+          mkdir -p build/ipa
+          
+          # Extrair o .app do archive
+          APP_PATH=$(find build/RatoNet.xcarchive/Products/Applications -name "*.app" -type d | head -1)
+          if [ -z "$APP_PATH" ]; then
+              echo "❌ Não foi possível encontrar o .app no archive"
+              exit 1
+          fi
+          
+          echo "📱 App encontrado: $APP_PATH"
+          
+          # Criar o Payload directory
+          PAYLOAD_DIR="build/ipa/Payload"
+          mkdir -p "$PAYLOAD_DIR"
+          
+          # Copiar o .app para Payload
+          cp -R "$APP_PATH" "$PAYLOAD_DIR/"
+          
+          # Criar o IPA
+          IPA_NAME="RatoNet.ipa"
+          cd build/ipa
+          zip -r "$IPA_NAME" Payload
+          cd ../..
           
           # Verificar se o IPA foi criado
-          if [ ! -f "build/ipa/*.ipa" ] && [ -z "$(ls -A build/ipa/*.ipa 2>/dev/null)" ]; then
+          if [ ! -f "build/ipa/$IPA_NAME" ]; then
               echo "❌ IPA não foi criado"
               exit 1
           fi
           
-          echo "✅ IPA exportado com sucesso"
+          echo "✅ IPA criado com sucesso: build/ipa/$IPA_NAME"
+          ls -lh build/ipa/*.ipa
     artifacts:
       - build/ipa/*.ipa
       - build/*.dSYM.zip
