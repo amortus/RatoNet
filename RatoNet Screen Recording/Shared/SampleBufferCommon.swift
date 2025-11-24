@@ -6,6 +6,8 @@ import VideoToolbox
 // | 4b header size | <m>b header | <n>b buffer |
 // +----------------+-------------+-------------+
 
+let ratonetAppGroup = "group.com.eerimoq.RatoNet"
+
 enum SampleBufferType: Codable {
     case videoFormat
     case videoBuffer
