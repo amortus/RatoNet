@@ -167,7 +167,6 @@
 		037D9F162E38AC2700C0AF9A /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Shared/SampleBufferCommon.swift,
 				Shared/SampleBufferReceiver.swift,
 			);
 			target = 035E9E322A9A02D6009D4F5A /* RatoNet */;
