@@ -1,4 +1,4 @@
-FORMAT_ARGS=--maxwidth 120 --swiftversion 5 --exclude Moblin/Integrations/Tesla/Protobuf
+FORMAT_ARGS=--maxwidth 120 --swiftversion 5 --exclude RatoNet/Integrations/Tesla/Protobuf
 LINT_ARGS=--strict --quiet
 
 all:
@@ -7,33 +7,33 @@ all:
 
 style:
 	swiftformat $(FORMAT_ARGS) "Common"
-	swiftformat $(FORMAT_ARGS) "Moblin"
-	swiftformat $(FORMAT_ARGS) "Moblin Watch"
-	swiftformat $(FORMAT_ARGS) "Moblin Widget"
-	swiftformat $(FORMAT_ARGS) "Moblin Screen Recording"
-	swiftformat $(FORMAT_ARGS) "MoblinTests"
+	swiftformat $(FORMAT_ARGS) "RatoNet"
+	swiftformat $(FORMAT_ARGS) "RatoNet Watch"
+	swiftformat $(FORMAT_ARGS) "RatoNet Widget"
+	swiftformat $(FORMAT_ARGS) "RatoNet Screen Recording"
+	swiftformat $(FORMAT_ARGS) "RatoNetTests"
 
 style-check:
 	swiftformat $(FORMAT_ARGS) --lint "Common"
-	swiftformat $(FORMAT_ARGS) --lint "Moblin"
-	swiftformat $(FORMAT_ARGS) --lint "Moblin Watch"
-	swiftformat $(FORMAT_ARGS) --lint "Moblin Widget"
-	swiftformat $(FORMAT_ARGS) --lint "Moblin Screen Recording"
-	swiftformat $(FORMAT_ARGS) --lint "MoblinTests"
+	swiftformat $(FORMAT_ARGS) --lint "RatoNet"
+	swiftformat $(FORMAT_ARGS) --lint "RatoNet Watch"
+	swiftformat $(FORMAT_ARGS) --lint "RatoNet Widget"
+	swiftformat $(FORMAT_ARGS) --lint "RatoNet Screen Recording"
+	swiftformat $(FORMAT_ARGS) --lint "RatoNetTests"
 
 lint:
 	swiftlint lint $(LINT_ARGS) "Common"
-	swiftlint lint $(LINT_ARGS) "Moblin"
-	swiftlint lint $(LINT_ARGS) "Moblin Watch"
-	swiftlint lint $(LINT_ARGS) "Moblin Widget"
-	swiftlint lint $(LINT_ARGS) "Moblin Screen Recording"
-	swiftlint lint $(LINT_ARGS) "MoblinTests"
+	swiftlint lint $(LINT_ARGS) "RatoNet"
+	swiftlint lint $(LINT_ARGS) "RatoNet Watch"
+	swiftlint lint $(LINT_ARGS) "RatoNet Widget"
+	swiftlint lint $(LINT_ARGS) "RatoNet Screen Recording"
+	swiftlint lint $(LINT_ARGS) "RatoNetTests"
 
 machine-translate:
 	python3 utils/translate.py Common/Localizable.xcstrings
 
 pack-exported-localizations:
-	cd Moblin\ Localizations && \
+	cd RatoNet\ Localizations && \
 	for f in * ; do \
 	    python3 ../utils/xliff.py $$f/Localized\ Contents/*.xliff && \
 	    zip -qr $$f.zip $$f && \

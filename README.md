@@ -1,6 +1,6 @@
 [<img src="docs/app-store.svg">](https://apps.apple.com/app/id6466745933)
 
-# Moblin - IRL Streaming
+# RatoNet - IRL Streaming
 
 A free iOS app for IRL streaming. Mainly targeting [Twitch](https://twitch.tv), but can
 stream to [YouTube](https://youtube.com), [Kick](https://kick.com), [Facebook](https://facebook.com)
@@ -172,12 +172,12 @@ TestFlight: https://testflight.apple.com/join/PDpxEaGh
 - Moblink for more connection.
 - Low light boost.
 - Cosmetics.
-  - Select Moblin icon to show in app and on home screen.
-  - Optionally purchase additional Moblin icons to support developers.
+  - Select RatoNet icon to show in app and on home screen.
+  - Optionally purchase additional RatoNet icons to support developers.
 - Configure stream resolution, FPS, video codec, bitrate and more.
 - Configurable bitrate presets.
 - Adaptive bitrate for SRT(LA).
-- Optionally remote control the streamer's Moblin app over the network.
+- Optionally remote control the streamer's RatoNet app over the network.
   - Shows basic status information.
   - Change scene.
   - Change mic.
@@ -187,7 +187,7 @@ TestFlight: https://testflight.apple.com/join/PDpxEaGh
   - ...
 - Torch.
 - Mute audio.
-- Deep link settings (moblin://).
+- Deep link settings (ratonet://).
   - Including a deep link creator for service providers.
 - Landscape.
   - Both 0 and 180 degrees orientation. Video always with gravity down
@@ -253,7 +253,7 @@ TestFlight: https://testflight.apple.com/join/PDpxEaGh
   - Skip current TTS message.
 - Watch face complication.
 
-# Import settings using moblin:// (custom URL)
+# Import settings using ratonet:// (custom URL)
 
 ## Examples
 
@@ -262,7 +262,7 @@ TestFlight: https://testflight.apple.com/join/PDpxEaGh
 An example creating a new stream is
 
 ```
-moblin://?{"streams":[{"name":"BELABOX%20UK","url":"srtla://uk.srt.belabox.net:5000?streamid=9812098rh9hf8942hid","video":{"codec":"H.265/HEVC"},"obs":{"webSocketUrl":"ws://123.22.32.112:5465","webSocketPassword":"foobar"}}]}
+ratonet://?{"streams":[{"name":"BELABOX%20UK","url":"srtla://uk.srt.belabox.net:5000?streamid=9812098rh9hf8942hid","video":{"codec":"H.265/HEVC"},"obs":{"webSocketUrl":"ws://123.22.32.112:5465","webSocketPassword":"foobar"}}]}
 ```
 
 where the URL decoded pretty printed JSON blob is
@@ -290,7 +290,7 @@ where the URL decoded pretty printed JSON blob is
 An example with only two quick buttons enabled is
 
 ```
-moblin://?{"quickButtons":{"twoColumns":false,"showName":true,"enableScroll":true,"disableAllButtons":true,"buttons":[{"type":"Mute","enabled":true},{"type":"Draw","enabled":true}]}}
+ratonet://?{"quickButtons":{"twoColumns":false,"showName":true,"enableScroll":true,"disableAllButtons":true,"buttons":[{"type":"Mute","enabled":true},{"type":"Draw","enabled":true}]}}
 ```
 
 where the URL decoded pretty printed JSON blob is
@@ -318,19 +318,19 @@ where the URL decoded pretty printed JSON blob is
 
 ## Specification
 
-Format: `moblin://?<URL encoded JSON blob>`
+Format: `ratonet://?<URL encoded JSON blob>`
 
-The `MoblinSettingsUrl` class in
-[MoblinSettingsUrl.swift](https://github.com/eerimoq/moblin/blob/main/Moblin/Various/MoblinSettingsUrl.swift) defines
+The `RatoNetSettingsUrl` class in
+[RatoNetSettingsUrl.swift](https://github.com/eerimoq/moblin/blob/main/RatoNet/Various/RatoNetSettingsUrl.swift) defines
 the JSON blob format. Class members are JSON object keys. Members with
 `?` after the type are optional. Some types are defined in
-[Settings.swift](https://github.com/eerimoq/moblin/blob/main/Moblin/Various/Settings.swift).
+[Settings.swift](https://github.com/eerimoq/moblin/blob/main/RatoNet/Various/Settings.swift).
 
 # Browser widget JavaScript API
 
 Get access to various data in your Browser widget.
 
-NOTE: You must enable `Settings -> Scenes -> My browser widget -> Moblin
+NOTE: You must enable `Settings -> Scenes -> My browser widget -> RatoNet
 access` to give the website access to the Browser widget JavaScript
 API.
 
@@ -339,8 +339,8 @@ API.
 Add this code to your website to receive chat messages with prefix `!`.
 
 ```js
-moblin.subscribe({ chat: { prefix: "!" } });
-moblin.onmessage = (message) => {
+ratonet.subscribe({ chat: { prefix: "!" } });
+ratonet.onmessage = (message) => {
   if (message.chat !== undefined) {
     console.log(message.chat.message);
   }
@@ -350,10 +350,10 @@ moblin.onmessage = (message) => {
 ## Specification
 
 Topics to subscribe to are defined by `SubscribeTopic` in
-[BrowserEffectServer.swift](https://github.com/eerimoq/moblin/blob/main/Moblin/VideoEffects/BrowserEffect/BrowserEffectServer.swift).
+[BrowserEffectServer.swift](https://github.com/eerimoq/moblin/blob/main/RatoNet/VideoEffects/BrowserEffect/BrowserEffectServer.swift).
 
 Messages passed to `onmessage` are defined by `Message` in
-[BrowserEffectServer.swift](https://github.com/eerimoq/moblin/blob/main/Moblin/VideoEffects/BrowserEffect/BrowserEffectServer.swift).
+[BrowserEffectServer.swift](https://github.com/eerimoq/moblin/blob/main/RatoNet/VideoEffects/BrowserEffect/BrowserEffectServer.swift).
 
 # Similar software
 
@@ -363,30 +363,30 @@ Messages passed to `onmessage` are defined by `Message` in
 
 # Development environment setup
 
-Roughly the steps to setup Moblin's developement environment.
+Roughly the steps to setup RatoNet's developement environment.
 
 1. Install Xcode with iOS and MacOS simulators on your Mac.
 
 2. Open a terminal.
 
-3. Clone Moblin.
+3. Clone RatoNet.
 
    `git clone https://github.com/eerimoq/moblin.git`
 
-4. Enter Moblins repository.
+4. Enter RatoNet's repository.
 
    `cd moblin`
 
-5. Open the Moblin project in Xcode. Wait for the dependencies to load.
+5. Open the RatoNet project in Xcode. Wait for the dependencies to load.
 
-   `open Moblin.xcodeproj`
+   `open RatoNet.xcodeproj`
 
-6. Press `Command + B` to build Moblin.
+6. Press `Command + B` to build RatoNet.
 
 7. Click on the code signing error and add your account. No Apple
    developer account is needed.
 
-8. Change the `Bundle Identifier` to anything you want (i.e. `com.whoami.Moblin`).
+8. Change the `Bundle Identifier` to anything you want (i.e. `com.whoami.RatoNet`).
 
 9. Remove `In-App Purchase` and `Access Wi-Fi Information` by clicking
    their trash cans.

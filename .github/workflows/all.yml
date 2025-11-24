@@ -32,7 +32,7 @@ jobs:
       - name: Build
         run: |
           xcodebuild \
-              -scheme Moblin \
+              -scheme RatoNet \
               -skipPackagePluginValidation \
               build \
               CODE_SIGN_IDENTITY="" \

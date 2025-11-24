@@ -1,0 +1,63 @@
+workflows:
+  ios-workflow:
+    name: RatoNet iOS Build
+    max_build_duration: 120
+    instance_type: mac_mini_m1
+    environment:
+      groups:
+        # Adicione seus grupos de variáveis aqui se necessário
+        # - app_store_credentials
+      vars:
+        XCODE_WORKSPACE: "RatoNet.xcodeproj"
+        XCODE_SCHEME: "RatoNet"
+        BUNDLE_ID: "com.eerimoq.Mobs"
+        APP_ID: "" # Preencha com seu App ID se tiver
+      xcode: latest
+    scripts:
+      - name: Install dependencies
+        script: |
+          # Instalar SwiftLint e SwiftFormat se necessário
+          brew install swiftlint swiftformat || true
+      - name: Resolve Swift packages
+        script: |
+          xcodebuild -resolvePackageDependencies -project "$XCODE_WORKSPACE" -scheme "$XCODE_SCHEME"
+      - name: Set up code signing settings on Xcode project
+        script: |
+          xcode-project use-profiles
+      - name: Build ipa for distribution
+        script: |
+          xcodebuild \
+            -project "$XCODE_WORKSPACE" \
+            -scheme "$XCODE_SCHEME" \
+            -sdk iphoneos \
+            -configuration Release \
+            -archivePath build/RatoNet.xcarchive \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            archive
+      - name: Export IPA
+        script: |
+          xcodebuild \
+            -exportArchive \
+            -archivePath build/RatoNet.xcarchive \
+            -exportOptionsPlist exportOptions.plist \
+            -exportPath build/ipa
+    artifacts:
+      - build/ipa/*.ipa
+      - build/*.dSYM.zip
+    publishing:
+      email:
+        recipients:
+          - user@example.com # Substitua pelo seu email
+        notify:
+          success: true
+          failure: false
+      # Descomente se quiser publicar no App Store Connect
+      # app_store_connect:
+      #   auth: integration
+      #   submit_to_testflight: false
+      #   beta_groups:
+      #     - group name 1
+      #     - group name 2
+
