@@ -78,21 +78,22 @@ workflows:
           xcode-project use-profiles
       - name: Build ipa for distribution
         script: |
-          # Solução: Fazer archive apenas do target principal
-          # O problema é que o scheme inclui RatoNetWatch que tem o mesmo PRODUCT_NAME
-          # Vamos fazer o archive usando apenas o target principal
+          # Solução: Fazer archive do scheme principal
+          # Limpar derived data para evitar problemas de cache de módulos
           mkdir -p build
+          rm -rf build/DerivedData || true
           
           # Desabilitar plugins de pacotes para evitar erro de validação do PrepareLicenseList
           export SWIFT_PACKAGE_PLUGIN_DISABLE=1
           
-          # Primeiro, fazer build de todas as dependências necessárias
-          # (exceto RatoNetWatch que causa conflito)
+          # Primeiro, fazer build completo do scheme para garantir que todas as dependências
+          # sejam construídas na ordem correta (SDWebImage antes de SDWebImageWebPCoder)
           xcodebuild \
             -project "$XCODE_WORKSPACE" \
-            -target "RatoNet Screen Recording" \
+            -scheme "$XCODE_SCHEME" \
             -sdk iphoneos \
             -configuration Release \
+            -derivedDataPath build/DerivedData \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
@@ -101,26 +102,11 @@ workflows:
             SKIP_INSTALL=YES \
             build || true
           
-          # Build do target principal (isso vai incluir RatoNetWatch como dependência,
-          # mas vamos tentar evitar o conflito)
+          # Agora fazer o archive usando -scheme (obrigatório quando usa -archivePath)
+          # O Watch app será ignorado automaticamente porque é watchOS
           xcodebuild \
             -project "$XCODE_WORKSPACE" \
-            -target "RatoNet" \
-            -sdk iphoneos \
-            -configuration Release \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO \
-            ONLY_ACTIVE_ARCH=NO \
-            -skipPackagePluginValidation \
-            SKIP_INSTALL=YES \
-            build || true
-          
-          # Agora fazer o archive usando -target para evitar incluir o Watch app
-          # O Watch app é watchOS e não pode ser arquivado junto com iOS
-          xcodebuild \
-            -project "$XCODE_WORKSPACE" \
-            -target "RatoNet" \
+            -scheme "$XCODE_SCHEME" \
             -sdk iphoneos \
             -configuration Release \
             -archivePath build/RatoNet.xcarchive \
