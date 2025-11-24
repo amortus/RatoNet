@@ -55,8 +55,12 @@ struct RatoNetWidgetApp: Widget {
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: Provider()) { entry in
-            RatoNetWidgetAppEntryView(entry: entry)
-                .containerBackground(.fill.tertiary, for: .widget)
+            if #available(iOS 17.0, *) {
+                RatoNetWidgetAppEntryView(entry: entry)
+                    .containerBackground(.fill.tertiary, for: .widget)
+            } else {
+                RatoNetWidgetAppEntryView(entry: entry)
+            }
         }
         .configurationDisplayName("RatoNet")
         .description("RatoNet widget.")
