@@ -3,11 +3,7 @@
 <plist version="1.0">
 <dict>
     <key>method</key>
-    <string>ad-hoc</string>
-    <key>teamID</key>
-    <string></string>
-    <key>signingStyle</key>
-    <string>automatic</string>
+    <string>app-store</string>
     <key>compileBitcode</key>
     <false/>
     <key>uploadSymbols</key>
