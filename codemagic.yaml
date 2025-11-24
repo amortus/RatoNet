@@ -17,12 +17,67 @@ workflows:
       - name: Resolve Swift packages
         script: |
           xcodebuild -resolvePackageDependencies -project "$XCODE_WORKSPACE" -scheme "$XCODE_SCHEME"
+      - name: Fix Watch app product name to avoid conflicts
+        script: |
+          # Modificar temporariamente o PRODUCT_NAME do RatoNetWatch para evitar conflito
+          # O RatoNetWatch tem PRODUCT_NAME = RatoNet, causando conflito com o target principal
+          # Vamos mudar para RatoNetWatchApp apenas nas seções do Watch app (SDKROOT = watchos)
+          python3 << 'EOF'
+          import re
+          
+          project_file = "RatoNet.xcodeproj/project.pbxproj"
+          
+          with open(project_file, 'r') as f:
+              content = f.read()
+          
+          # Substituir PRODUCT_NAME = RatoNet; que está antes de SDKROOT = watchos;
+          # Isso identifica especificamente o RatoNetWatch
+          # Usar padrão flexível para capturar qualquer espaçamento
+          pattern = r'(PRODUCT_NAME = RatoNet;\s+SDKROOT = watchos;)'
+          replacement = r'PRODUCT_NAME = RatoNetWatchApp;\n\t\t\t\tSDKROOT = watchos;'
+          
+          # Tentar também padrão alternativo caso o primeiro não funcione
+          if re.search(pattern, content) is None:
+              # Padrão alternativo: qualquer whitespace entre as linhas
+              pattern = r'(PRODUCT_NAME = RatoNet;[\s\n]+SDKROOT = watchos;)'
+              replacement = r'PRODUCT_NAME = RatoNetWatchApp;\n\t\t\t\tSDKROOT = watchos;'
+          
+          modified_content = re.sub(pattern, replacement, content)
+          
+          if modified_content != content:
+              with open(project_file, 'w') as f:
+                  f.write(modified_content)
+              print("✅ PRODUCT_NAME do RatoNetWatch modificado de 'RatoNet' para 'RatoNetWatchApp'")
+          else:
+              print("⚠️  Não foi possível modificar (pode já estar modificado ou padrão diferente)")
+          EOF
       - name: Set up code signing settings on Xcode project
         script: |
           xcode-project use-profiles
       - name: Build ipa for distribution
         script: |
-          # Primeiro, fazer build apenas do target principal para evitar conflitos
+          # Solução: Fazer archive apenas do target principal
+          # O problema é que o scheme inclui RatoNetWatch que tem o mesmo PRODUCT_NAME
+          # Vamos fazer o archive usando apenas o target principal
+          mkdir -p build
+          
+          # Primeiro, fazer build de todas as dependências necessárias
+          # (exceto RatoNetWatch que causa conflito)
+          xcodebuild \
+            -project "$XCODE_WORKSPACE" \
+            -target "RatoNet Screen Recording" \
+            -sdk iphoneos \
+            -configuration Release \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            ONLY_ACTIVE_ARCH=NO \
+            -skipPackagePluginValidation \
+            SKIP_INSTALL=YES \
+            build || true
+          
+          # Build do target principal (isso vai incluir RatoNetWatch como dependência,
+          # mas vamos tentar evitar o conflito)
           xcodebuild \
             -project "$XCODE_WORKSPACE" \
             -target "RatoNet" \
@@ -33,21 +88,26 @@ workflows:
             CODE_SIGNING_ALLOWED=NO \
             ONLY_ACTIVE_ARCH=NO \
             -skipPackagePluginValidation \
-            build
+            SKIP_INSTALL=YES \
+            build || true
           
-          # Depois, fazer o archive usando o scheme
+          # Agora fazer o archive - o problema é que precisa usar -scheme
+          # Mas vamos tentar forçar apenas o target principal
+          # Usando derivedDataPath diferente pode ajudar a evitar conflitos
           xcodebuild \
             -project "$XCODE_WORKSPACE" \
             -scheme "$XCODE_SCHEME" \
             -sdk iphoneos \
             -configuration Release \
             -archivePath build/RatoNet.xcarchive \
+            -derivedDataPath build/DerivedData \
             -skipPackagePluginValidation \
             -destination "generic/platform=iOS" \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
             ONLY_ACTIVE_ARCH=NO \
+            SKIP_INSTALL=YES \
             archive
       - name: Export IPA
         script: |
