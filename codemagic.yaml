@@ -22,9 +22,23 @@ workflows:
           xcode-project use-profiles
       - name: Build ipa for distribution
         script: |
+          # Primeiro, fazer build apenas do target principal para evitar conflitos
           xcodebuild \
             -project "$XCODE_WORKSPACE" \
             -target "RatoNet" \
+            -sdk iphoneos \
+            -configuration Release \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            ONLY_ACTIVE_ARCH=NO \
+            -skipPackagePluginValidation \
+            build
+          
+          # Depois, fazer o archive usando o scheme
+          xcodebuild \
+            -project "$XCODE_WORKSPACE" \
+            -scheme "$XCODE_SCHEME" \
             -sdk iphoneos \
             -configuration Release \
             -archivePath build/RatoNet.xcarchive \
