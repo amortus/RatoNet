@@ -155,7 +155,6 @@ workflows:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
             ONLY_ACTIVE_ARCH=NO \
-            SKIP_INSTALL=YES \
             archive 2>&1 | tee build/archive.log
           ARCHIVE_EXIT_CODE=$?
           set -e
