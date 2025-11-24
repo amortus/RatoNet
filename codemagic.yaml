@@ -133,6 +133,8 @@ workflows:
             build || true
           
           # Agora fazer o archive usando -scheme (obrigatório quando usa -archivePath)
+          echo "📦 Criando archive..."
+          set +e  # Não sair imediatamente em caso de erro
           xcodebuild \
             -project "$XCODE_WORKSPACE" \
             -scheme "$XCODE_SCHEME" \
@@ -147,7 +149,28 @@ workflows:
             CODE_SIGNING_ALLOWED=NO \
             ONLY_ACTIVE_ARCH=NO \
             SKIP_INSTALL=YES \
-            archive
+            archive 2>&1 | tee build/archive.log
+          ARCHIVE_EXIT_CODE=$?
+          set -e
+          
+          # Verificar se o archive foi criado
+          if [ -d "build/RatoNet.xcarchive" ]; then
+              echo "✅ Archive criado com sucesso em build/RatoNet.xcarchive"
+          else
+              echo "❌ Archive não foi criado"
+              echo "📋 Últimas linhas do log de archive:"
+              tail -50 build/archive.log || true
+              # Restaurar o backup antes de sair
+              if [ -f "RatoNet.xcodeproj/project.pbxproj.backup" ]; then
+                  mv "RatoNet.xcodeproj/project.pbxproj.backup" "RatoNet.xcodeproj/project.pbxproj"
+              fi
+              exit 1
+          fi
+          
+          # Se o comando falhou mas o archive existe, continuar
+          if [ $ARCHIVE_EXIT_CODE -ne 0 ]; then
+              echo "⚠️  Comando de archive retornou código $ARCHIVE_EXIT_CODE, mas archive existe. Continuando..."
+          fi
           
           # Restaurar o backup do project.pbxproj
           if [ -f "RatoNet.xcodeproj/project.pbxproj.backup" ]; then
@@ -156,11 +179,28 @@ workflows:
           fi
       - name: Export IPA
         script: |
+          # Verificar se o archive existe antes de exportar
+          if [ ! -d "build/RatoNet.xcarchive" ]; then
+              echo "❌ Archive não encontrado em build/RatoNet.xcarchive"
+              echo "📂 Procurando archives em outros locais..."
+              find . -name "*.xcarchive" -type d 2>/dev/null | head -5
+              exit 1
+          fi
+          
+          echo "📦 Exportando IPA do archive..."
           xcodebuild \
             -exportArchive \
             -archivePath build/RatoNet.xcarchive \
             -exportOptionsPlist exportOptions.plist \
             -exportPath build/ipa
+          
+          # Verificar se o IPA foi criado
+          if [ ! -f "build/ipa/*.ipa" ] && [ -z "$(ls -A build/ipa/*.ipa 2>/dev/null)" ]; then
+              echo "❌ IPA não foi criado"
+              exit 1
+          fi
+          
+          echo "✅ IPA exportado com sucesso"
     artifacts:
       - build/ipa/*.ipa
       - build/*.dSYM.zip
