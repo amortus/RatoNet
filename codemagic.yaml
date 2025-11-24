@@ -116,12 +116,11 @@ workflows:
             SKIP_INSTALL=YES \
             build || true
           
-          # Agora fazer o archive - o problema é que precisa usar -scheme
-          # Mas vamos tentar forçar apenas o target principal
-          # Usando derivedDataPath diferente pode ajudar a evitar conflitos
+          # Agora fazer o archive usando -target para evitar incluir o Watch app
+          # O Watch app é watchOS e não pode ser arquivado junto com iOS
           xcodebuild \
             -project "$XCODE_WORKSPACE" \
-            -scheme "$XCODE_SCHEME" \
+            -target "RatoNet" \
             -sdk iphoneos \
             -configuration Release \
             -archivePath build/RatoNet.xcarchive \
