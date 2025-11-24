@@ -22,39 +22,56 @@ workflows:
           # Desabilitar plugins de pacotes para evitar erro de validação
           export SWIFT_PACKAGE_PLUGIN_DISABLE=1
           xcodebuild -resolvePackageDependencies -project "$XCODE_WORKSPACE" -scheme "$XCODE_SCHEME" -skipPackagePluginValidation
-      - name: Fix Watch app product name to avoid conflicts
+      - name: Fix Watch app product name and remove plugin dependency
         script: |
-          # Modificar temporariamente o PRODUCT_NAME do RatoNetWatch para evitar conflito
-          # O RatoNetWatch tem PRODUCT_NAME = RatoNet, causando conflito com o target principal
-          # Vamos mudar para RatoNetWatchApp apenas nas seções do Watch app (SDKROOT = watchos)
+          # Modificar temporariamente o project.pbxproj para:
+          # 1. Corrigir PRODUCT_NAME do RatoNetWatch
+          # 2. Remover dependência do plugin PrepareLicenseList que está causando erro de validação
           python3 << 'EOF'
           import re
           
           project_file = "RatoNet.xcodeproj/project.pbxproj"
           
-          with open(project_file, 'r') as f:
+          with open(project_file, 'r', encoding='utf-8') as f:
               content = f.read()
           
-          # Substituir PRODUCT_NAME = RatoNet; que está antes de SDKROOT = watchos;
-          # Isso identifica especificamente o RatoNetWatch
-          # Usar padrão flexível para capturar qualquer espaçamento
-          pattern = r'(PRODUCT_NAME = RatoNet;\s+SDKROOT = watchos;)'
-          replacement = r'PRODUCT_NAME = RatoNetWatchApp;\n\t\t\t\tSDKROOT = watchos;'
+          original_content = content
+          changes_made = []
           
-          # Tentar também padrão alternativo caso o primeiro não funcione
-          if re.search(pattern, content) is None:
-              # Padrão alternativo: qualquer whitespace entre as linhas
-              pattern = r'(PRODUCT_NAME = RatoNet;[\s\n]+SDKROOT = watchos;)'
-              replacement = r'PRODUCT_NAME = RatoNetWatchApp;\n\t\t\t\tSDKROOT = watchos;'
+          # 1. Substituir PRODUCT_NAME = RatoNet; que está antes de SDKROOT = watchos;
+          pattern1 = r'(PRODUCT_NAME = RatoNet;\s+SDKROOT = watchos;)'
+          replacement1 = r'PRODUCT_NAME = RatoNetWatchApp;\n\t\t\t\tSDKROOT = watchos;'
           
-          modified_content = re.sub(pattern, replacement, content)
-          
-          if modified_content != content:
-              with open(project_file, 'w') as f:
-                  f.write(modified_content)
-              print("✅ PRODUCT_NAME do RatoNetWatch modificado de 'RatoNet' para 'RatoNetWatchApp'")
+          if re.search(pattern1, content):
+              content = re.sub(pattern1, replacement1, content)
+              changes_made.append("PRODUCT_NAME do RatoNetWatch modificado")
           else:
-              print("⚠️  Não foi possível modificar (pode já estar modificado ou padrão diferente)")
+              pattern1_alt = r'(PRODUCT_NAME = RatoNet;[\s\n]+SDKROOT = watchos;)'
+              if re.search(pattern1_alt, content):
+                  content = re.sub(pattern1_alt, replacement1, content)
+                  changes_made.append("PRODUCT_NAME do RatoNetWatch modificado")
+          
+          # 2. Remover o bloco completo do PBXTargetDependency que referencia PrepareLicenseList
+          # Formato exato: IDENTIFIER /* PBXTargetDependency */ = { isa = PBXTargetDependency; productRef = IDENTIFIER /* PrepareLicenseList */; };
+          pattern2 = r'\t\t\t[0-9A-F]+ /\* PBXTargetDependency \*/ = \{\s*isa = PBXTargetDependency;\s*productRef = [0-9A-F]+ /\* PrepareLicenseList \*/;\s*\};?\n'
+          if re.search(pattern2, content):
+              content = re.sub(pattern2, '', content)
+              changes_made.append("Dependência do plugin PrepareLicenseList removida")
+          
+          # 3. Remover a definição do produto do plugin
+          pattern3 = r'\t\t\t[0-9A-F]+ /\* PrepareLicenseList \*/ = \{\s*isa = XCSwiftPackageProductDependency;\s*package = [0-9A-F]+ /\* XCRemoteSwiftPackageReference "LicenseList" \*/;\s*productName = "plugin:PrepareLicenseList";\s*\};?\n'
+          if re.search(pattern3, content):
+              content = re.sub(pattern3, '', content)
+              changes_made.append("Definição do produto PrepareLicenseList removida")
+          
+          if content != original_content:
+              with open(project_file, 'w', encoding='utf-8') as f:
+                  f.write(content)
+              print("✅ Modificações aplicadas:")
+              for change in changes_made:
+                  print(f"   - {change}")
+          else:
+              print("⚠️  Nenhuma modificação necessária (pode já estar aplicada)")
           EOF
       - name: Set up code signing settings on Xcode project
         script: |
