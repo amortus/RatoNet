@@ -86,6 +86,13 @@ workflows:
           # Desabilitar plugins de pacotes para evitar erro de validação do PrepareLicenseList
           export SWIFT_PACKAGE_PLUGIN_DISABLE=1
           
+          # Baixar componentes necessários do Xcode
+          echo "📥 Baixando Metal Toolchain..."
+          xcodebuild -downloadComponent MetalToolchain || true
+          
+          echo "📥 Baixando plataforma iOS..."
+          xcodebuild -downloadPlatform iOS || true
+          
           # Remover temporariamente a dependência do Watch app antes do archive
           # O Watch app é watchOS e não pode ser arquivado junto com iOS
           python3 << 'EOF'
