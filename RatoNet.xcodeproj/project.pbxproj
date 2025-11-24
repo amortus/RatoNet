@@ -136,6 +136,8 @@
 				View/StreamOverlayIconAndTextView.swift,
 				View/StreamOverlayTextView.swift,
 				View/ThermalStateView.swift,
+				"Various/CommonUtils.swift",
+				"Various/AudioLevel.swift",
 			);
 			target = 0312E42D2C00F24E00C6F878 /* RatoNet Screen Recording */;
 		};
