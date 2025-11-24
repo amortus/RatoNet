@@ -23,3 +23,4 @@ echo "Backup criado: $BACKUP_FILE"
 echo "Nota: Este script precisa ser ajustado para modificar o project.pbxproj corretamente"
 
 
+
