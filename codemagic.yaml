@@ -24,14 +24,16 @@ workflows:
         script: |
           xcodebuild \
             -project "$XCODE_WORKSPACE" \
-            -scheme "$XCODE_SCHEME" \
+            -target "RatoNet" \
             -sdk iphoneos \
             -configuration Release \
             -archivePath build/RatoNet.xcarchive \
             -skipPackagePluginValidation \
+            -destination "generic/platform=iOS" \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
+            ONLY_ACTIVE_ARCH=NO \
             archive
       - name: Export IPA
         script: |
