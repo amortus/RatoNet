@@ -4,9 +4,6 @@ workflows:
     max_build_duration: 120
     instance_type: mac_mini_m1
     environment:
-      groups:
-        # Adicione seus grupos de variáveis aqui se necessário
-        # - app_store_credentials
       vars:
         XCODE_WORKSPACE: "RatoNet.xcodeproj"
         XCODE_SCHEME: "RatoNet"
