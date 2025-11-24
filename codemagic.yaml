@@ -8,6 +8,9 @@ workflows:
         XCODE_WORKSPACE: "RatoNet.xcodeproj"
         XCODE_SCHEME: "RatoNet"
         BUNDLE_ID: "com.eerimoq.Mobs"
+        # Desabilitar plugins de pacotes para evitar erro de validação do PrepareLicenseList
+        SWIFT_PACKAGE_PLUGIN_DISABLE: "1"
+        XCODE_SKIP_PACKAGE_PLUGIN_VALIDATION: "1"
       xcode: latest
     scripts:
       - name: Install dependencies
@@ -16,7 +19,9 @@ workflows:
           brew install swiftlint swiftformat || true
       - name: Resolve Swift packages
         script: |
-          xcodebuild -resolvePackageDependencies -project "$XCODE_WORKSPACE" -scheme "$XCODE_SCHEME"
+          # Desabilitar plugins de pacotes para evitar erro de validação
+          export SWIFT_PACKAGE_PLUGIN_DISABLE=1
+          xcodebuild -resolvePackageDependencies -project "$XCODE_WORKSPACE" -scheme "$XCODE_SCHEME" -skipPackagePluginValidation
       - name: Fix Watch app product name to avoid conflicts
         script: |
           # Modificar temporariamente o PRODUCT_NAME do RatoNetWatch para evitar conflito
@@ -60,6 +65,9 @@ workflows:
           # O problema é que o scheme inclui RatoNetWatch que tem o mesmo PRODUCT_NAME
           # Vamos fazer o archive usando apenas o target principal
           mkdir -p build
+          
+          # Desabilitar plugins de pacotes para evitar erro de validação do PrepareLicenseList
+          export SWIFT_PACKAGE_PLUGIN_DISABLE=1
           
           # Primeiro, fazer build de todas as dependências necessárias
           # (exceto RatoNetWatch que causa conflito)
