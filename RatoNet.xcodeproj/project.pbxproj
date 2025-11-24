@@ -138,6 +138,7 @@
 				View/ThermalStateView.swift,
 				"Various/CommonUtils.swift",
 				"Various/AudioLevel.swift",
+				"Various/Validate.swift",
 			);
 			target = 0312E42D2C00F24E00C6F878 /* RatoNet Screen Recording */;
 		};

@@ -8,6 +8,8 @@ import VideoToolbox
 
 let ratonetAppGroup = "group.com.eerimoq.RatoNet"
 
+extension String: @retroactive Error {}
+
 enum SampleBufferType: Codable {
     case videoFormat
     case videoBuffer
@@ -65,5 +67,21 @@ func setIgnoreSigPipe(fd: Int32) throws {
     var on: Int32 = 1
     if setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, &on, socklen_t(MemoryLayout<Int32>.size)) == -1 {
         throw "Failed to set ignore sigpipe"
+    }
+}
+
+extension Data {
+    mutating func setUInt32Be(value: UInt32, offset: Int = 0) {
+        withUnsafeMutableBytes { data in data.storeBytes(
+            of: value.bigEndian,
+            toByteOffset: offset,
+            as: UInt32.self
+        ) }
+    }
+
+    func getUInt32Be(offset: Int = 0) -> UInt32 {
+        return withUnsafeBytes { data in
+            data.load(fromByteOffset: offset, as: UInt32.self)
+        }.bigEndian
     }
 }
