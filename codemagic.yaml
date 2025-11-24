@@ -195,12 +195,35 @@ workflows:
           fi
           
           echo "📦 Extraindo IPA do archive..."
+          echo "📂 Estrutura do archive:"
+          find build/RatoNet.xcarchive -type d -maxdepth 3 | head -20
+          
           mkdir -p build/ipa
           
-          # Extrair o .app do archive
-          APP_PATH=$(find build/RatoNet.xcarchive/Products/Applications -name "*.app" -type d | head -1)
+          # Procurar o .app em diferentes locais possíveis
+          APP_PATH=""
+          
+          # Tentar diferentes caminhos
+          if [ -d "build/RatoNet.xcarchive/Products/Applications" ]; then
+              APP_PATH=$(find build/RatoNet.xcarchive/Products/Applications -name "*.app" -type d | head -1)
+          fi
+          
+          if [ -z "$APP_PATH" ] && [ -d "build/RatoNet.xcarchive/Products" ]; then
+              APP_PATH=$(find build/RatoNet.xcarchive/Products -name "*.app" -type d | head -1)
+          fi
+          
+          if [ -z "$APP_PATH" ]; then
+              APP_PATH=$(find build/RatoNet.xcarchive -name "*.app" -type d | head -1)
+          fi
+          
           if [ -z "$APP_PATH" ]; then
               echo "❌ Não foi possível encontrar o .app no archive"
+              echo "📂 Conteúdo do archive:"
+              ls -la build/RatoNet.xcarchive/
+              if [ -d "build/RatoNet.xcarchive/Products" ]; then
+                  echo "📂 Conteúdo de Products:"
+                  ls -la build/RatoNet.xcarchive/Products/
+              fi
               exit 1
           fi
           
